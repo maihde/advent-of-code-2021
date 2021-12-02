@@ -1,0 +1,4 @@
+triplets([ uint(@) ]) .. [ sum(seq(@)) ] .. pairs([ @ ]) .. [ first.@ < second.@ ] .. sum.@
+
+
+

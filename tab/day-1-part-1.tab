@@ -1,0 +1,3 @@
+pairs([ uint(@) ]) .. [ first.@ < second.@ ] .. sum.@
+
+
