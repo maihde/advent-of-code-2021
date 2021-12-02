@@ -1,0 +1,68 @@
+# import a few libraries
+import '/sys'
+import '/argparse'
+
+#: Helper function to read commands
+#:
+#: :param file_input: the file to read commands from
+#: :param pos: the current position, defaults to 0,0
+#: :param aim: the current aim, defaults to 0
+#:
+#: :return: the final position after executing commands
+read_commands = file_input mode pos: (0, 0) aim: 0 ->
+
+    # Open the file and read all the lines, note that
+    # this reads all commands into memory at once and
+    # could cause issues with extremely large command
+    # lists
+    except
+        err =>
+            with fd = open file_input  =>
+                lines = fd.readlines!
+        err :: Exception => 
+            print "Failed to open input:" err
+            raise SystemExit
+
+    # Process each command line
+    for x in lines =>
+        # the line is a direction plus amount
+        direction, amount = x.split(' ')
+        amount = int(amount)
+      
+        # two modes are supported, in vertical mode
+        # 'up' and 'down' move position up and down directly.
+        # in aim mode 'up' and 'down' affect aim instead 
+        if
+            mode == "vertical" =>
+                if
+                    direction == "forward" =>
+                        pos = ( pos!!0 + amount, pos!!1 )
+                    direction == "up" =>
+                        pos = ( pos!!0, pos!!1 - amount)
+                    direction == "down" =>
+                        pos = ( pos!!0, pos!!1 + amount)
+                    otherwise =>
+                        raise ValueError 'invalid input'
+            mode == "aim" =>
+                if
+                    direction == "forward" =>
+                        pos = ( pos!!0 + amount, pos!!1 + (aim * amount) )
+                    direction == "up" =>
+                        aim = aim - amount
+                    direction == "down" =>
+                        aim = aim + amount
+                    otherwise =>
+                        raise ValueError 'invalid input'
+
+    # Return the final result
+    return pos
+  
+# Support running as a program with
+# python -m dg day-2.dg
+if __name__ == "__main__" => 
+    parser = argparse.ArgumentParser!
+    parser.add_argument '-m' '--mode' default: 'vertical' help: 'vertical or aim'
+    opts = parser.parse_args!
+
+    pos = read_commands 'input.txt' opts.mode
+    print(pos) 
