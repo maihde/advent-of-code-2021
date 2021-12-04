@@ -64,5 +64,5 @@ if __name__ == "__main__" =>
     parser.add_argument '-m' '--mode' default: 'vertical' help: 'vertical or aim'
     opts = parser.parse_args!
 
-    pos = read_commands 'input.txt' opts.mode
+    pos = read_commands '../dat/day2.txt' opts.mode
     print(pos) 
