@@ -1,0 +1,53 @@
+use .base
+use test
+
+-- This code comes from the alvaro.List.circularShift implementation
+--   Case 1 : if asked to shift 0, then return the value as is
+--   Case 2 : a shift number where the list has at least one element and we are shifting left
+--   Case 3 : a sihft number where the list has at least one element and we are shifting right
+--   Note, the original code failed if asked to shift an empty list, so I added a case to handing it
+circularShift : Int -> [a] -> [a]
+circularShift = cases
+  +0, m           -> m
+  n, []           -> []
+  n, head +: rest | n Int.< +0 ->
+    use Int +
+    circularShift (n + +1) (rest :+ head)
+  n, init :+ last | n Int.> +0 ->
+    use Int -
+    use List +:
+    circularShift (n - +1) (last +: init)
+
+-- We use a list of length 8 to represent the number of fish at each level of maturity.
+-- So the initial state of 3,4,3,1,2 would be encoded like: 
+--    [0,1,1,2,1,0,0,0,0]
+-- After one day:
+--    [1,1,2,1,0,0,0,0,0]
+-- After two days:
+--    [1,2,1,0,0,0,1,0,1]
+simulate : Int -> [Nat] -> [Nat]
+simulate = cases
+    +0, m -> m
+    n, fish | n Int.> +0 ->
+        use Int -
+        births = List.unsafeAt 0 fish
+        newDayFish = circularShift -1 fish
+        withNewNabies = List.updateAt (x -> births) 8 newDayFish
+        withNewParents = List.updateAt ( x -> x Nat.+ births) 6 withNewNabies
+        simulate (n - +1) withNewParents
+
+-- Stolen from Slack 
+sum : [Nat] -> Nat
+sum nats =
+  List.foldLeft (a b -> a Nat.+ b) 0 nats
+
+-- TODO use file I/O
+-- TODO processInput to get the values to pass to simulate
+> input = [3,4,3,1,2]
+> fish = simulate +256 [0,1,1,2,1,0,0,0,0]
+> sum fish
+
+-- Tests
+test> simulate.tests.oneDayNoBirths  = check (simulate +1 [0,1,1,2,1,0,0,0,0] === [1,1,2,1,0,0,0,0,0] )
+test> simulate.tests.oneDayTwoBirths = check (simulate +1 [2,1,1,2,1,0,0,0,0] === [1,1,2,1,0,0,2,0,2] )
+test> simulate.tests.threeDay = check (simulate +3 [0,1,1,2,1,0,0,0,0] === [2,1,0,0,0,1,1,1,1] )
